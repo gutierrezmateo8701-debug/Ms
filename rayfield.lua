@@ -1,5 +1,5 @@
 --[[
-    Rayfield Interface Suite Clone - Full Implementation
+    Rayfield Interface Suite Clone - Advanced Functional Version
     Repository: https://github.com/gutierrezmateo8701-debug/Ms/blob/main/rayfield.lua
 ]]
 
@@ -15,55 +15,113 @@ local LocalPlayer = Players.LocalPlayer
 function Rayfield:CreateWindow(Settings)
     Settings = Settings or {}
     local WindowName = Settings.Name or "Rayfield Interface"
-    local LoadingTitle = Settings.LoadingTitle or "Rayfield Interface"
-    local LoadingSubtitle = Settings.LoadingSubtitle or "by Shlex & Others"
 
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "RayfieldLibrary"
+    ScreenGui.Name = "RayfieldAdvancedGui"
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     pcall(function() ScreenGui.Parent = CoreGui end)
     if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
-    -- Main Window Frame
+    -- Ventana Principal (Tamaño compacto y moderno: 480x300)
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 560, 0, 380)
-    MainFrame.Position = UDim2.new(0.5, -280, 0.5, -190)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    MainFrame.Size = UDim2.new(0, 480, 0, 300)
+    MainFrame.Position = UDim2.new(0.5, -240, 0.5, -150)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     MainFrame.BorderSizePixel = 0
+    MainFrame.ClipsDescendants = true
     MainFrame.Parent = ScreenGui
 
     local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 8)
+    MainCorner.CornerRadius = UDim.new(0, 10)
     MainCorner.Parent = MainFrame
 
+    -- Barra Superior
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
-    TopBar.Size = UDim2.new(1, 0, 0, 38)
-    TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    TopBar.Size = UDim2.new(1, 0, 0, 35)
+    TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     TopBar.BorderSizePixel = 0
     TopBar.Parent = MainFrame
 
-    local TopBarCorner = Instance.new("UICorner")
-    TopBarCorner.CornerRadius = UDim.new(0, 8)
-    TopBarCorner.Parent = TopBar
+    local TopCorner = Instance.new("UICorner")
+    TopCorner.CornerRadius = UDim.new(0, 10)
+    TopCorner.Parent = TopBar
 
     local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -20, 1, 0)
+    TitleLabel.Size = UDim2.new(1, -100, 1, 0)
     TitleLabel.Position = UDim2.new(0, 12, 0, 0)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = WindowName
-    TitleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
-    TitleLabel.TextSize = 14
+    TitleLabel.TextColor3 = Color3.fromRGB(230, 230, 230)
+    TitleLabel.TextSize = 13
     TitleLabel.Font = Enum.Font.GothamBold
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TopBar
 
-    -- Tabs Container / Sidebar
+    -- Botón Minimizar / Cerrar
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+    CloseBtn.Position = UDim2.new(1, -30, 0.5, -12.5)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    CloseBtn.Text = "X"
+    CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseBtn.TextSize = 11
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.Parent = TopBar
+
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(0, 6)
+    CloseCorner.Parent = CloseBtn
+
+    CloseBtn.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
+    local Minimized = false
+    local MinimizeBtn = Instance.new("TextButton")
+    MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+    MinimizeBtn.Position = UDim2.new(1, -60, 0.5, -12.5)
+    MinimizeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    MinimizeBtn.Text = "-"
+    MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MinimizeBtn.TextSize = 13
+    MinimizeBtn.Font = Enum.Font.GothamBold
+    MinimizeBtn.Parent = TopBar
+
+    local MinCorner = Instance.new("UICorner")
+    MinCorner.CornerRadius = UDim.new(0, 6)
+    MinCorner.Parent = MinimizeBtn
+
+    MinimizeBtn.MouseButton1Click:Connect(function()
+        Minimized = not Minimized
+        local targetSize = Minimized and UDim2.new(0, 480, 0, 35) or UDim2.new(0, 480, 0, 300)
+        TweenService:Create(MainFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = targetSize}):Play()
+    end)
+
+    -- Sistema de arrastre (Draggable)
+    local dragging, dragInput, dragStart, startPos
+    TopBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+    end)
+
+    -- Contenedor de Pestañas (Sidebar)
     local TabContainer = Instance.new("ScrollingFrame")
-    TabContainer.Name = "TabContainer"
-    TabContainer.Size = UDim2.new(0, 140, 1, -48)
-    TabContainer.Position = UDim2.new(0, 8, 0, 44)
+    TabContainer.Size = UDim2.new(0, 120, 1, -45)
+    TabContainer.Position = UDim2.new(0, 6, 0, 39)
     TabContainer.BackgroundTransparency = 1
     TabContainer.BorderSizePixel = 0
     TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -72,104 +130,98 @@ function Rayfield:CreateWindow(Settings)
 
     local TabListLayout = Instance.new("UIListLayout")
     TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabListLayout.Padding = UDim.new(0, 4)
+    TabListLayout.Padding = UDim.new(0, 3)
     TabListLayout.Parent = TabContainer
 
-    -- Content Pages Area
     local PagesContainer = Instance.new("Folder")
-    PagesContainer.Name = "PagesContainer"
     PagesContainer.Parent = MainFrame
 
     local WindowObj = {}
     local FirstTab = true
 
-    function WindowObj:CreateTab(TabName, TabIcon)
+    function WindowObj:CreateTab(TabName)
         local Page = Instance.new("ScrollingFrame")
-        Page.Name = TabName .. "Page"
-        Page.Size = UDim2.new(1, -160, 1, -48)
-        Page.Position = UDim2.new(0, 154, 0, 44)
+        Page.Size = UDim2.new(1, -136, 1, -45)
+        Page.Position = UDim2.new(0, 132, 0, 39)
         Page.BackgroundTransparency = 1
         Page.BorderSizePixel = 0
         Page.CanvasSize = UDim2.new(0, 0, 0, 0)
-        Page.ScrollBarThickness = 4
+        Page.ScrollBarThickness = 3
         Page.Visible = FirstTab
         Page.Parent = PagesContainer
 
         local PageListLayout = Instance.new("UIListLayout")
         PageListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        PageListLayout.Padding = UDim.new(0, 6)
+        PageListLayout.Padding = UDim.new(0, 5)
         PageListLayout.Parent = Page
 
-        local PagePadding = Instance.new("UIPadding")
-        PagePadding.PaddingRight = UDim.new(0, 8)
-        PagePadding.Parent = Page
+        PageListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            Page.CanvasSize = UDim2.new(0, 0, 0, PageListLayout.AbsoluteContentSize.Y + 10)
+        end)
 
         local TabButton = Instance.new("TextButton")
-        TabButton.Size = UDim2.new(1, 0, 0, 32)
-        TabButton.BackgroundColor3 = FirstTab and Color3.fromRGB(35, 35, 35) or Color3.fromRGB(25, 25, 25)
+        TabButton.Size = UDim2.new(1, 0, 0, 28)
+        TabButton.BackgroundColor3 = FirstTab and Color3.fromRGB(35, 35, 35) or Color3.fromRGB(20, 20, 20)
         TabButton.BorderSizePixel = 0
         TabButton.Text = "  " .. TabName
-        TabButton.TextColor3 = FirstTab and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 160)
-        TabButton.TextSize = 13
+        TabButton.TextColor3 = FirstTab and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 150)
+        TabButton.TextSize = 12
         TabButton.Font = Enum.Font.GothamSemibold
         TabButton.TextXAlignment = Enum.TextXAlignment.Left
         TabButton.Parent = TabContainer
 
-        local TabBtnCorner = Instance.new("UICorner")
-        TabBtnCorner.CornerRadius = UDim.new(0, 6)
-        TabBtnCorner.Parent = TabButton
+        local TabCorner = Instance.new("UICorner")
+        TabCorner.CornerRadius = UDim.new(0, 5)
+        TabCorner.Parent = TabButton
 
         TabButton.MouseButton1Click:Connect(function()
-            for _, p in pairs(PagesContainer:GetChildren()) do
-                p.Visible = false
-            end
+            for _, p in pairs(PagesContainer:GetChildren()) do p.Visible = false end
             for _, b in pairs(TabContainer:GetChildren()) do
                 if b:IsA("TextButton") then
-                    b.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-                    b.TextColor3 = Color3.fromRGB(160, 160, 160)
+                    TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 20, 20), TextColor3 = Color3.fromRGB(150, 150, 150)}):Play()
                 end
             end
             Page.Visible = true
-            TabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-            TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TweenService:Create(TabButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 35), TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
         end)
 
         FirstTab = false
         local TabObj = {}
 
-        function TabObj:CreateSection(SectionName)
-            local SectionLabel = Instance.new("TextLabel")
-            SectionLabel.Size = UDim2.new(1, 0, 0, 24)
-            SectionLabel.BackgroundTransparency = 1
-            SectionLabel.Text = "  " .. string.upper(SectionName)
-            SectionLabel.TextColor3 = Color3.fromRGB(120, 120, 120)
-            SectionLabel.TextSize = 11
-            SectionLabel.Font = Enum.Font.GothamBold
-            SectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-            SectionLabel.Parent = Page
+        function TabObj:CreateSection(Name)
+            local Sec = Instance.new("TextLabel")
+            Sec.Size = UDim2.new(1, 0, 0, 20)
+            Sec.BackgroundTransparency = 1
+            Sec.Text = "  " .. string.upper(Name)
+            Sec.TextColor3 = Color3.fromRGB(100, 100, 100)
+            Sec.TextSize = 10
+            Sec.Font = Enum.Font.GothamBold
+            Sec.TextXAlignment = Enum.TextXAlignment.Left
+            Sec.Parent = Page
         end
 
         function TabObj:CreateButton(Config)
             Config = Config or {}
             local Btn = Instance.new("TextButton")
-            Btn.Size = UDim2.new(1, 0, 0, 36)
-            Btn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+            Btn.Size = UDim2.new(1, -6, 0, 30)
+            Btn.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
             Btn.BorderSizePixel = 0
             Btn.Text = "  " .. (Config.Name or "Button")
-            Btn.TextColor3 = Color3.fromRGB(220, 220, 220)
-            Btn.TextSize = 12
+            Btn.TextColor3 = Color3.fromRGB(210, 210, 210)
+            Btn.TextSize = 11
             Btn.Font = Enum.Font.Gotham
             Btn.TextXAlignment = Enum.TextXAlignment.Left
             Btn.Parent = Page
 
             local Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 6)
+            Corner.CornerRadius = UDim.new(0, 5)
             Corner.Parent = Btn
 
             Btn.MouseButton1Click:Connect(function()
-                if Config.Callback then
-                    pcall(Config.Callback)
-                end
+                TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(0, 150, 255)}):Play()
+                task.wait(0.1)
+                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(22, 22, 22)}):Play()
+                if Config.Callback then pcall(Config.Callback) end
             end)
         end
 
@@ -179,30 +231,30 @@ function Rayfield:CreateWindow(Settings)
             if Config.Flag then Rayfield.Flags[Config.Flag] = Toggled end
 
             local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(1, 0, 0, 36)
-            Frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+            Frame.Size = UDim2.new(1, -6, 0, 30)
+            Frame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
             Frame.BorderSizePixel = 0
             Frame.Parent = Page
 
             local Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 6)
+            Corner.CornerRadius = UDim.new(0, 5)
             Corner.Parent = Frame
 
             local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -50, 1, 0)
-            Label.Position = UDim2.new(0, 12, 0, 0)
+            Label.Size = UDim2.new(1, -45, 1, 0)
+            Label.Position = UDim2.new(0, 10, 0, 0)
             Label.BackgroundTransparency = 1
             Label.Text = Config.Name or "Toggle"
-            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
-            Label.TextSize = 12
+            Label.TextColor3 = Color3.fromRGB(210, 210, 210)
+            Label.TextSize = 11
             Label.Font = Enum.Font.Gotham
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Frame
 
             local ToggleBox = Instance.new("Frame")
-            ToggleBox.Size = UDim2.new(0, 22, 0, 22)
-            ToggleBox.Position = UDim2.new(1, -32, 0.5, -11)
-            ToggleBox.BackgroundColor3 = Toggled and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(45, 45, 45)
+            ToggleBox.Size = UDim2.new(0, 18, 0, 18)
+            ToggleBox.Position = UDim2.new(1, -26, 0.5, -9)
+            ToggleBox.BackgroundColor3 = Toggled and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(40, 40, 40)
             ToggleBox.BorderSizePixel = 0
             ToggleBox.Parent = Frame
 
@@ -213,68 +265,65 @@ function Rayfield:CreateWindow(Settings)
             Frame.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     Toggled = not Toggled
-                    ToggleBox.BackgroundColor3 = Toggled and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(45, 45, 45)
+                    TweenService:Create(ToggleBox, TweenInfo.new(0.2), {BackgroundColor3 = Toggled and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(40, 40, 40)}):Play()
                     if Config.Flag then Rayfield.Flags[Config.Flag] = Toggled end
-                    if Config.Callback then
-                        pcall(function() Config.Callback(Toggled) end)
-                    end
+                    if Config.Callback then pcall(function() Config.Callback(Toggled) end) end
                 end
             end)
         end
 
         function TabObj:CreateSlider(Config)
             Config = Config or {}
-            local Min = Config.Range and Config.Range[1] or 0
-            local Max = Config.Range and Config.Range[2] or 100
+            local Min, Max = Config.Range[1], Config.Range[2]
             local Current = Config.CurrentValue or Min
             if Config.Flag then Rayfield.Flags[Config.Flag] = Current end
 
             local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(1, 0, 0, 52)
-            Frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+            Frame.Size = UDim2.new(1, -6, 0, 42)
+            Frame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
             Frame.BorderSizePixel = 0
             Frame.Parent = Page
 
             local Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 6)
+            Corner.CornerRadius = UDim.new(0, 5)
             Corner.Parent = Frame
 
             local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -20, 0, 24)
-            Label.Position = UDim2.new(0, 12, 0, 4)
+            Label.Size = UDim2.new(1, -15, 0, 20)
+            Label.Position = UDim2.new(0, 10, 0, 2)
             Label.BackgroundTransparency = 1
             Label.Text = (Config.Name or "Slider") .. ": " .. tostring(Current)
-            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
-            Label.TextSize = 12
+            Label.TextColor3 = Color3.fromRGB(210, 210, 210)
+            Label.TextSize = 11
             Label.Font = Enum.Font.Gotham
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Frame
 
             local SliderBar = Instance.new("Frame")
-            SliderBar.Size = UDim2.new(1, -24, 0, 6)
-            SliderBar.Position = UDim2.new(0, 12, 0, 36)
-            SliderBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            SliderBar.Size = UDim2.new(1, -20, 0, 5)
+            SliderBar.Position = UDim2.new(0, 10, 0, 28)
+            SliderBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
             SliderBar.BorderSizePixel = 0
             SliderBar.Parent = Frame
 
             local BarCorner = Instance.new("UICorner")
-            BarCorner.CornerRadius = UDim.new(0, 3)
+            BarCorner.CornerRadius = UDim.new(0, 2)
             BarCorner.Parent = SliderBar
 
             local SliderFill = Instance.new("Frame")
             SliderFill.Size = UDim2.new((Current - Min) / (Max - Min), 0, 1, 0)
-            SliderFill.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
+            SliderFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
             SliderFill.BorderSizePixel = 0
             SliderFill.Parent = SliderBar
 
             local FillCorner = Instance.new("UICorner")
-            FillCorner.CornerRadius = UDim.new(0, 3)
+            FillCorner.CornerRadius = UDim.new(0, 2)
             FillCorner.Parent = SliderFill
 
-            local function UpdateSlider(input)
-                local pos = UDim2.new(math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1), 0, 1, 0)
-                SliderFill.Size = pos
-                local val = math.floor(Min + ((Max - Min) * pos.X.Scale))
+            local function Update(input)
+                local pos = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+                SliderFill.Size = UDim2.new(pos, 0, 1, 0)
+                local val = math.floor(Min + ((Max - Min) * pos))
                 Label.Text = (Config.Name or "Slider") .. ": " .. tostring(val)
                 if Config.Flag then Rayfield.Flags[Config.Flag] = val end
                 if Config.Callback then pcall(function() Config.Callback(val) end) end
@@ -282,176 +331,47 @@ function Rayfield:CreateWindow(Settings)
 
             local Sliding = false
             SliderBar.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    Sliding = true
-                    UpdateSlider(input)
-                end
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then Sliding = true Update(input) end
             end)
-
             UserInputService.InputChanged:Connect(function(input)
-                if Sliding and input.UserInputType == Enum.UserInputType.MouseMovement then
-                    UpdateSlider(input)
-                end
+                if Sliding and input.UserInputType == Enum.UserInputType.MouseMovement then Update(input) end
             end)
-
             UserInputService.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    Sliding = false
-                end
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then Sliding = false end
             end)
-        end
-
-        function TabObj:CreateDropdown(Config)
-            Config = Config or {}
-            local Current = Config.CurrentOption or (Config.Options and Config.Options[1]) or ""
-            if Config.Flag then Rayfield.Flags[Config.Flag] = Current end
-
-            local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(1, 0, 0, 36)
-            Frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-            Frame.BorderSizePixel = 0
-            Frame.Parent = Page
-
-            local Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 6)
-            Corner.Parent = Frame
-
-            local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -20, 1, 0)
-            Label.Position = UDim2.new(0, 12, 0, 0)
-            Label.BackgroundTransparency = 1
-            Label.Text = (Config.Name or "Dropdown") .. " [ " .. tostring(Current) .. " ]"
-            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
-            Label.TextSize = 12
-            Label.Font = Enum.Font.Gotham
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Parent = Frame
-
-            local idx = 1
-            Frame.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 and Config.Options and #Config.Options > 0 then
-                    idx = idx % #Config.Options + 1
-                    Current = Config.Options[idx]
-                    Label.Text = (Config.Name or "Dropdown") .. " [ " .. tostring(Current) .. " ]"
-                    if Config.Flag then Rayfield.Flags[Config.Flag] = Current end
-                    if Config.Callback then pcall(function() Config.Callback(Current) end) end
-                end
-            end)
-        end
-
-        function TabObj:CreateColorPicker(Config)
-            Config = Config or {}
-            local Color = Config.Color or Color3.fromRGB(255, 255, 255)
-            if Config.Flag then Rayfield.Flags[Config.Flag] = Color end
-
-            local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(1, 0, 0, 36)
-            Frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-            Frame.BorderSizePixel = 0
-            Frame.Parent = Page
-
-            local Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 6)
-            Corner.Parent = Frame
-
-            local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -50, 1, 0)
-            Label.Position = UDim2.new(0, 12, 0, 0)
-            Label.BackgroundTransparency = 1
-            Label.Text = Config.Name or "Color Picker"
-            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
-            Label.TextSize = 12
-            Label.Font = Enum.Font.Gotham
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Parent = Frame
-
-            local Preview = Instance.new("Frame")
-            Preview.Size = UDim2.new(0, 24, 0, 20)
-            Preview.Position = UDim2.new(1, -34, 0.5, -10)
-            Preview.BackgroundColor3 = Color
-            Preview.BorderSizePixel = 0
-            Preview.Parent = Frame
-
-            local PrevCorner = Instance.new("UICorner")
-            PrevCorner.CornerRadius = UDim.new(0, 4)
-            PrevCorner.Parent = Preview
-        end
-
-        function TabObj:CreateKeybind(Config)
-            Config = Config or {}
-            local CurrentKey = Config.CurrentKeybind or "F"
-            if Config.Flag then Rayfield.Flags[Config.Flag] = CurrentKey end
-
-            local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(1, 0, 0, 36)
-            Frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-            Frame.BorderSizePixel = 0
-            Frame.Parent = Page
-
-            local Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 6)
-            Corner.Parent = Frame
-
-            local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -70, 1, 0)
-            Label.Position = UDim2.new(0, 12, 0, 0)
-            Label.BackgroundTransparency = 1
-            Label.Text = Config.Name or "Keybind"
-            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
-            Label.TextSize = 12
-            Label.Font = Enum.Font.Gotham
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Parent = Frame
-
-            local KeyLabel = Instance.new("TextLabel")
-            KeyLabel.Size = UDim2.new(0, 50, 0, 22)
-            KeyLabel.Position = UDim2.new(1, -60, 0.5, -11)
-            KeyLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-            KeyLabel.Text = tostring(CurrentKey)
-            KeyLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-            KeyLabel.TextSize = 11
-            KeyLabel.Font = Enum.Font.GothamBold
-            KeyLabel.Parent = Frame
-
-            local KeyCorner = Instance.new("UICorner")
-            KeyCorner.CornerRadius = UDim.new(0, 4)
-            KeyCorner.Parent = KeyLabel
         end
 
         function TabObj:CreateInput(Config)
             Config = Config or {}
-            local CurrentVal = Config.CurrentValue or ""
-            if Config.Flag then Rayfield.Flags[Config.Flag] = CurrentVal end
-
             local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(1, 0, 0, 36)
-            Frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+            Frame.Size = UDim2.new(1, -6, 0, 30)
+            Frame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
             Frame.BorderSizePixel = 0
             Frame.Parent = Page
 
             local Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 6)
+            Corner.CornerRadius = UDim.new(0, 5)
             Corner.Parent = Frame
 
             local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -120, 1, 0)
-            Label.Position = UDim2.new(0, 12, 0, 0)
+            Label.Size = UDim2.new(1, -110, 1, 0)
+            Label.Position = UDim2.new(0, 10, 0, 0)
             Label.BackgroundTransparency = 1
             Label.Text = Config.Name or "Input"
-            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
-            Label.TextSize = 12
+            Label.TextColor3 = Color3.fromRGB(210, 210, 210)
+            Label.TextSize = 11
             Label.Font = Enum.Font.Gotham
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Frame
 
             local TextBox = Instance.new("TextBox")
-            TextBox.Size = UDim2.new(0, 100, 0, 24)
-            TextBox.Position = UDim2.new(1, -110, 0.5, -12)
-            TextBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-            TextBox.Text = CurrentVal
-            TextBox.PlaceholderText = Config.PlaceholderText or "Escribe aquí..."
-            TextBox.TextColor3 = Color3.fromRGB(220, 220, 220)
-            TextBox.TextSize = 11
+            TextBox.Size = UDim2.new(0, 95, 0, 20)
+            TextBox.Position = UDim2.new(1, -100, 0.5, -10)
+            TextBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            TextBox.Text = Config.CurrentValue or ""
+            TextBox.PlaceholderText = Config.PlaceholderText or "Escribe..."
+            TextBox.TextColor3 = Color3.fromRGB(210, 210, 210)
+            TextBox.TextSize = 10
             TextBox.Font = Enum.Font.Gotham
             TextBox.Parent = Frame
 
@@ -461,9 +381,8 @@ function Rayfield:CreateWindow(Settings)
 
             TextBox.FocusLost:Connect(function(enter)
                 if enter then
-                    local val = TextBox.Text
-                    if Config.Flag then Rayfield.Flags[Config.Flag] = val end
-                    if Config.Callback then pcall(function() Config.Callback(val) end) end
+                    if Config.Flag then Rayfield.Flags[Config.Flag] = TextBox.Text end
+                    if Config.Callback then pcall(function() Config.Config(TextBox.Text) end) end
                 end
             end)
         end
@@ -473,7 +392,51 @@ function Rayfield:CreateWindow(Settings)
 
     function Rayfield:Notify(Config)
         Config = Config or {}
-        print("[Rayfield Notification] " .. tostring(Config.Title) .. ": " .. tostring(Config.Content))
+        local NotifGui = ScreenGui:FindFirstChild("NotifContainer") or Instance.new("Frame", ScreenGui)
+        NotifGui.Name = "NotifContainer"
+        NotifGui.Size = UDim2.new(0, 220, 1, 0)
+        NotifGui.Position = UDim2.new(1, -230, 0, 0)
+        NotifGui.BackgroundTransparency = 1
+
+        local Card = Instance.new("Frame")
+        Card.Size = UDim2.new(1, 0, 0, 50)
+        Card.Position = UDim2.new(1, 0, 0.85, -(#NotifGui:GetChildren() * 55))
+        Card.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        Card.Parent = NotifGui
+
+        local CCorner = Instance.new("UICorner")
+        CCorner.CornerRadius = UDim.new(0, 6)
+        CCorner.Parent = Card
+
+        local TLabel = Instance.new("TextLabel")
+        TLabel.Size = UDim2.new(1, -10, 0, 20)
+        TLabel.Position = UDim2.new(0, 8, 0, 4)
+        TLabel.BackgroundTransparency = 1
+        TLabel.Text = Config.Title or "Notificación"
+        TLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TLabel.TextSize = 11
+        TLabel.Font = Enum.Font.GothamBold
+        TLabel.TextXAlignment = Enum.TextXAlignment.Left
+        TLabel.Parent = Card
+
+        local CLabel = Instance.new("TextLabel")
+        CLabel.Size = UDim2.new(1, -10, 0, 20)
+        CLabel.Position = UDim2.new(0, 8, 0, 22)
+        CLabel.BackgroundTransparency = 1
+        CLabel.Text = Config.Content or ""
+        CLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+        CLabel.TextSize = 10
+        CLabel.Font = Enum.Font.Gotham
+        CLabel.TextXAlignment = Enum.TextXAlignment.Left
+        CLabel.Parent = Card
+
+        TweenService:Create(Card, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, Card.Position.Y.Scale, Card.Position.Y.Offset)}):Play()
+
+        task.delay(Config.Duration or 3, function()
+            TweenService:Create(Card, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, 50, Card.Position.Y.Scale, Card.Position.Y.Offset)}):Play()
+            task.wait(0.3)
+            Card:Destroy()
+        end)
     end
 
     return WindowObj
